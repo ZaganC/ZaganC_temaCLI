@@ -12,7 +12,7 @@ namespace OpenTK_console_sample01
         private float objectPosY = 0.0f; 
 
 
-        public SimpleWindow() : base(800, 600)
+        public SimpleWindow() : base(800, 600) 
         {
             KeyDown += Keyboard_KeyDown;
             MouseMove += Mouse_Move;
