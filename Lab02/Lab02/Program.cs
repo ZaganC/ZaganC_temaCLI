@@ -3,19 +3,24 @@ using System.Drawing;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
+using System.IO;
 
 namespace OpenTK_console_sample01
 {
     class SimpleWindow : GameWindow
     {
-        private float objectPosX = 0.0f;
-        private float objectPosY = 0.0f; 
+        private Vector2[] triangleVertices = new Vector2[3];
+        private Color color = Color.FromArgb(255, 0, 0, 255);
 
 
         public SimpleWindow() : base(800, 600) 
         {
             KeyDown += Keyboard_KeyDown;
-            MouseMove += Mouse_Move;
+            LoadTriangleCoordinates("coordonate.txt");
+
+            triangleVertices[0] = new Vector2(-0.5f, 0.5f);
+            triangleVertices[1] = new Vector2(0.0f, -0.5f);
+            triangleVertices[2] = new Vector2(0.5f, 0.5f);
         }
 
 
@@ -24,33 +29,38 @@ namespace OpenTK_console_sample01
             if (e.Key == Key.Escape)
                 this.Exit();
 
-            if (e.Key == Key.F11)
-            {
-                if (this.WindowState == WindowState.Fullscreen)
-                    this.WindowState = WindowState.Normal;
-                else
-                    this.WindowState = WindowState.Fullscreen;
-            }
+            if (e.Key == Key.R)
+                color = Color.FromArgb(color.A, (color.R + 20) % 256, color.G, color.B);
+            if (e.Key == Key.G)
+                color = Color.FromArgb(color.A, color.R, (color.G + 20) % 256, color.B);
+            if (e.Key == Key.B)
+                color = Color.FromArgb(color.A, color.R, color.G, (color.B + 20) % 256);
 
 
-            if (e.Key == Key.A)
-                objectPosX -= 0.05f;
-
-
-            if (e.Key == Key.D)
-                objectPosX += 0.05f;
         }
 
-
-        void Mouse_Move(object sender, MouseMoveEventArgs e)
+        void LoadTriangleCoordinates(string filePath)
         {
-
-            objectPosY = (e.Y - Height / 2f) / (Height / 2f);
+            try
+            {
+                var lines = File.ReadAllLines(filePath);
+                for (int i = 0; i < 3; i++)
+                {
+                    var coords = lines[i].Split(',');
+                    float x = float.Parse(coords[0]);
+                    float y = float.Parse(coords[1]);
+                    triangleVertices[i] = new Vector2(x, y);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error loading triangle coordinates: " + ex.Message);
+            }
         }
 
         protected override void OnLoad(EventArgs e)
         {
-            GL.ClearColor(Color.MidnightBlue);
+            GL.ClearColor(Color.Black);
         }
 
         protected override void OnResize(EventArgs e)
@@ -73,12 +83,12 @@ namespace OpenTK_console_sample01
 
             GL.Begin(PrimitiveType.Triangles);
 
-            GL.Color3(Color.MidnightBlue);
-            GL.Vertex2(objectPosX - 1.0f, objectPosY + 1.0f); 
-            GL.Color3(Color.SpringGreen);
-            GL.Vertex2(objectPosX, objectPosY - 1.0f);
-            GL.Color3(Color.Ivory);
-            GL.Vertex2(objectPosX + 1.0f, objectPosY + 1.0f);
+            GL.Color4(color);
+
+            foreach (var vertex in triangleVertices)
+            {
+                GL.Vertex2(vertex);
+            }
 
             GL.End();
 
